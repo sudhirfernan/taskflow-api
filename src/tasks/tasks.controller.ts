@@ -1,28 +1,24 @@
-import { Controller, Get, Param, Body } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, Request } from '@nestjs/common';
 import { TasksService } from './tasks.service';
+import { use } from 'passport';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('tasks')
 export class TasksController {
-
+    
     constructor(
         private tasksService: TasksService
     ){}
 
-    //Create Task
-    // @Post()
-    // createTask(
-    //     @Body() body: any
-    // ): any {
-    //     return this.tasksService.createTask(body);
-
-    // }
-
-    //Get Tasks 
+    @UseGuards(JwtAuthGuard)
     @Get()
-    getTasks(): any[] {
-        return this.tasksService.getTasks();
+    getTasks(@Request() req){
+        return{
+            message: 'Protected tasks route',
+            user: req.user,
+        };
     }
-
+    
     @Get(':id')
     getOneTask(
         @Param('id') id: string
