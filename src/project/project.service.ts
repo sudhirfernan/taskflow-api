@@ -32,13 +32,13 @@ export class ProjectService {
     }
 
     async findAll(): Promise<Project[]> {
-        return this.projectRepo.find({ relations: ['user', 'tasks'] });
+        return this.projectRepo.find({ relations: ['user'] });
     }
 
     async findOne(id: number): Promise<Project | null> {
   return this.projectRepo.findOne({
     where: { id },
-    relations: ['user'], // 👈 This loads the user relation
+    relations: ['user'], 
   });
 
 }

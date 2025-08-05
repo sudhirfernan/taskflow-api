@@ -1,44 +1,107 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Not } from 'typeorm';
+import { CreateTaskDto } from './create-task.dto';
+import { UpdateTaskDto } from './update-task.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Task } from './task.entity';
+import { Project } from '../project/project.entity';    
+
+// @Injectable()
+// export class TasksService {
+//     tasks: any[] = [
+//         {id: 'asd1', title: 'Task Number One', description: 'Simple tasks for my App'},
+//         {id: 'qwe2', title: 'Go to a Store ', description: 'Because I need to buy some stuff'},
+//         {id: 'zxc3', title: 'Wash a Car', description: 'Washing the car is important'}
+
+//     ];
+
+//     //Create Task
+//     createTask(task: any): any[] {
+//         if(task.title === '' || task.description === ''){
+//             throw new BadRequestException();
+//         }
+
+//         const taskToCreate: any = {
+//             id: new Date().getTime().toString(),
+//             title: task.title,
+//             description: task.description
+//         }
+
+//         this.tasks.push(taskToCreate);
+
+//         return [ this.tasks ];
+//     }
+
+//     //Get all tasks
+//     getTasks(): any[]{
+//         return [...this.tasks];
+//     }
+
+//     //Get one task
+//     getOneTask(id: string): any {
+//         const task = this.tasks.find(t => t.id === id);
+
+//         if (!task) {
+//             return new NotFoundException();
+//         }
+//         return {...task };
+//     }
+// }
 
 @Injectable()
 export class TasksService {
-    tasks: any[] = [
-        {id: 'asd1', title: 'Task Number One', description: 'Simple tasks for my App'},
-        {id: 'qwe2', title: 'Go to a Store ', description: 'Because I need to buy some stuff'},
-        {id: 'zxc3', title: 'Wash a Car', description: 'Washing the car is important'}
+    constructor(
+        @InjectRepository(Task)
+        private readonly taskRepo: Repository<Task>,
+        @InjectRepository(Project)
+        private readonly projectRepo: Repository<Project>,
+    ) {}
 
-    ];
+    async createTask(projectId: number, userId: number, dto: CreateTaskDto): Promise<Task> {
+        const project = await this.projectRepo.findOne({ where: { id: projectId }, relations: ['user'] });
 
-    //Create Task
-    createTask(task: any): any[] {
-        if(task.title === '' || task.description === ''){
-            throw new BadRequestException();
+        if (!project) {
+            throw new NotFoundException('Project not found');
+        }
+        if (project.user.id !== userId) {
+            throw new ForbiddenException('You do not have permission to create tasks for this project');
         }
 
-        const taskToCreate: any = {
-            id: new Date().getTime().toString(),
-            title: task.title,
-            description: task.description
-        }
+        const task = this.taskRepo.create({ ...dto, project });
 
-        this.tasks.push(taskToCreate);
-
-        return [ this.tasks ];
+        return this.taskRepo.save(task);
     }
 
-    //Get all tasks
-    getTasks(): any[]{
-        return [...this.tasks];
+   async findTask(projectId: number, userId: number): Promise<Task[]> {
+        const project = await this.projectRepo.findOne({ where: { id: projectId }, relations: ['user'] });
+
+        if (!project) {
+            throw new NotFoundException('Project not found');
+        }
+        if (project.user.id !== userId) {
+            throw new ForbiddenException('You do not have permission to view tasks for this project');
+        }
+
+        return this.taskRepo.find({ where: { project: { id: projectId }}});
     }
 
-    //Get one task
-    getOneTask(id: string): any {
-        const task = this.tasks.find(t => t.id === id);
+    async updateTask(projectId: number, userId: number, taskId: number, dto: UpdateTaskDto): Promise<Task> {
+        const task = await this.taskRepo.findOne({ where: { id: taskId }, relations: ['project', 'project.user'] });
+        if (!task) throw new NotFoundException('Task not found');
+        if (task.project.id !== projectId) throw new BadRequestException('Task does not belong to the specified project');
+        if (task.project.user.id !== userId) throw new ForbiddenException('Not authorized');
 
-        if (!task) {
-            return new NotFoundException();
-        }
-        return {...task };
+        Object.assign(task, dto);
+        return this.taskRepo.save(task);
+    }
+
+    async deleteTask(projectId: number, userId: number, taskId: number): Promise<void> {
+        const task = await this.taskRepo.findOne({ where: { id: taskId }, relations: ['project', 'project.user'] });
+        if (!task) throw new NotFoundException('Task not found');
+        if (task.project.id !== projectId) throw new BadRequestException('Task does not belong to the specified project');
+        if (task.project.user.id !== userId) throw new ForbiddenException('Not authorized');
+
+        await this.taskRepo.remove(task);
     }
 }
