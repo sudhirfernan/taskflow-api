@@ -5,6 +5,7 @@ import { Request ,Param, NotFoundException } from '@nestjs/common';
 import { Update } from 'next/dist/build/swc/types';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 
 
 
@@ -14,6 +15,7 @@ export class ProjectController {
 
    
     @Post()
+    @ApiOperation({ summary: 'Create a new project' })
     create ( @Body() createProjectDto: CreateProjectDto){
       try{
         return this.projectService.createProject(createProjectDto);
@@ -24,12 +26,15 @@ export class ProjectController {
     }
     
     @Get()
+    @ApiOperation({ summary: 'Get all projects' })
     async findAll(){
         return this.projectService.findAll();
     }
 
+    @ApiBearerAuth()
     @UseGuards(JwtAuthGuard)
     @Get(':id')
+    @ApiOperation({ summary: 'Get a project by ID' })
     async findOne(@Request() req, @Param('id') id: number) {
         const project = await this.projectService.findOne(+id);
         if (!project) {
@@ -39,9 +44,11 @@ export class ProjectController {
         return project;
     }
     
+    @ApiBearerAuth()
     @UseGuards(JwtAuthGuard)
     @Patch(':id')
-async update(
+    @ApiOperation({ summary: 'Update a project by ID' })
+  async update(
   @Request() req, // ✅ correct variable name
   @Param('id') id: number,
   @Body() updateDto: CreateProjectDto // ✅ use UpdateProjectDto for updates
@@ -59,8 +66,10 @@ async update(
   return this.projectService.update(+id, updateDto);
 }
 
+    @ApiBearerAuth()
     @UseGuards(JwtAuthGuard)
     @Delete(':id')
+    @ApiOperation({ summary: 'Delete a project by ID' })
     async remove(@Request() req, @Param('id') id: number) {
         const project = await this.projectService.findOne(+id);
         if (!project) {
