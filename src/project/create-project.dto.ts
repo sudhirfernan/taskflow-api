@@ -11,7 +11,7 @@ export class CreateProjectDto {
   description: string;
 
   @ApiProperty({ example: 1 })
-  userId: number;
+  userId?: number;
 }
 
 export class UpdateProjectDto {

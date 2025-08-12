@@ -1,11 +1,13 @@
-import { Controller, Post, Body, Get, Patch, ForbiddenException, Delete, Req } from '@nestjs/common';
+import { Controller, Post, Body, Get, Patch, ForbiddenException, Delete, Req, Query } from '@nestjs/common';
 import { ProjectService } from './project.service';
 import { CreateProjectDto } from './create-project.dto';
 import { Request ,Param, NotFoundException } from '@nestjs/common';
 import { Update } from 'next/dist/build/swc/types';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { PaginationDto } from '../dto/pagination.dto';
+
 
 
 
@@ -27,8 +29,10 @@ export class ProjectController {
     
     @Get()
     @ApiOperation({ summary: 'Get all projects' })
-    async findAll(){
-        return this.projectService.findAll();
+    @ApiQuery({ name: 'page', required: false, example: 1})
+    @ApiQuery({ name: 'limit', required: false, example: 15 })
+    async findAll(@Query() paginationDto: PaginationDto) {
+        return this.projectService.findAll(paginationDto);
     }
 
     @ApiBearerAuth()
@@ -63,7 +67,7 @@ export class ProjectController {
     throw new ForbiddenException();
   }
 
-  return this.projectService.update(+id, updateDto);
+  return this.projectService.update(+id, updateDto, req.user.userId);
 }
 
     @ApiBearerAuth()

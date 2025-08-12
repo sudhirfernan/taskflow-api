@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Project } from './project.entity';
 import { CreateProjectDto } from './create-project.dto';
 import { User } from '../users/user.entity';
+import { PaginationDto } from 'src/dto/pagination.dto';
 
 
 @Injectable()
@@ -31,8 +32,23 @@ export class ProjectService {
         return this.projectRepo.save(project);
     }
 
-    async findAll(): Promise<Project[]> {
-        return this.projectRepo.find({ relations: ['user'] });
+    async findAll(paginationDto: PaginationDto): Promise<{ total: number; page: number; limit: number; data: Project[] }> {
+        const { page = 1, limit = 15 } = paginationDto;
+
+        const skip = (page - 1) * limit;
+
+        const [data, total] = await this.projectRepo.findAndCount({
+            relations: ['user'],
+            skip,
+            take: limit
+            
+        });
+        return {
+            total,
+            page,
+            limit,
+            data,
+        };
     }
 
     async findOne(id: number): Promise<Project | null> {
@@ -43,13 +59,20 @@ export class ProjectService {
 
 }
 
-async update(id: number, updateDto: CreateProjectDto): Promise<Project> {
+async update(id: number, updateDto: CreateProjectDto, userId: number): Promise<Project> {
     const project = await this.findOne(id);
     if (!project) {
         throw new NotFoundException('Project not found');
     }
 
-    Object.assign(project, updateDto);
+    // Object.assign(project, updateDto);
+    // return this.projectRepo.save(project);
+    delete updateDto.userId; 
+
+    project.name = updateDto.name;
+    project.description = updateDto.description;
+    project.user = project.user; // Keep the original user association
+
     return this.projectRepo.save(project);
 
 }
