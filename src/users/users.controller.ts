@@ -12,6 +12,7 @@ export class UsersController {
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @Get('user-profile')
+    @ApiOperation({ summary: 'Get user profile' })
     async getProfile(@Request() req){
         console.log('User profile request:', req.user);
         const userId = req.user.userId;

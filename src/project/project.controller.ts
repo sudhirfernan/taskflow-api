@@ -7,6 +7,7 @@ import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { PaginationDto } from '../dto/pagination.dto';
+import { UpdateProjectDto } from './update-project.dto';
 
 
 
@@ -69,7 +70,6 @@ export class ProjectController {
 
   return this.projectService.update(+id, updateDto, req.user.userId);
 }
-
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard)
     @Delete(':id')
@@ -82,4 +82,4 @@ export class ProjectController {
         if (project.user.id !== req.user.userId) throw new ForbiddenException();
         return this.projectService.remove(+id); 
     }
-}
+  }

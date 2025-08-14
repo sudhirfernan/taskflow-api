@@ -9,6 +9,12 @@ export class Task {
     @Column()
     title: string;
 
+    @Column({ nullable: true })
+    description?: string;
+
+    @Column({ default: 'pending' })
+    status: string;
+
     @ManyToOne(() => Project, project => project.tasks)
     project: Project;
  
