@@ -20,5 +20,7 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false
-  }
+  },
+
+  "include": ["src/**/*.ts", "src/typeorm.config.ts"]
 }

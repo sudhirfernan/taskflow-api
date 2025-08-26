@@ -23,7 +23,7 @@ import { ProjectModule } from './project/project.module';
     AuthModule,
     UsersModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET, 
+      secret: process.env.ACCESS_TOKEN_SECRET, 
       signOptions: {expiresIn: '25m'},
     }),
 
@@ -40,7 +40,7 @@ import { ProjectModule } from './project/project.module';
     password: config.get<string>('DB_PASSWORD'),
     database: config.get<string>('DB_NAME'),
     entities: [__dirname + '/**/*.entity{.ts,.js}'],
-    synchronize: true,
+    migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
   };
 
   console.log('Database Config:', dbConfig);
