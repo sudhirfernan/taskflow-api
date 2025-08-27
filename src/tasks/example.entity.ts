@@ -12,7 +12,7 @@ export class Example {
     name: string;
 
     @Column()
-    age: number;
+    description: string;
 
     
 
