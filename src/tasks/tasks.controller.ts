@@ -25,6 +25,16 @@ export class TaskController {
     return this.taskService.findTask(projectId, req.user.userId);
   }
 
+  //testing backend git connected
+  
+  @Get('ping')
+  ping() {
+    return { message: 'pong from nestJs' };
+  }
+
+
+  
+
   @ApiBearerAuth()
   @Patch(':taskId')
   @ApiOperation({ summary: 'Update a task for a project' })
@@ -50,3 +60,5 @@ export class TaskController {
     return this.taskService.deleteTask(projectId, req.user.userId, taskId);
   }
 }
+
+

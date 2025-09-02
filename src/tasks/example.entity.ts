@@ -12,7 +12,13 @@ export class Example {
     name: string;
 
     @Column()
-    description: string;
+    surname: string;
+
+    @Column({ nullable: true })
+    description?: string;
+
+
+    
 
     
 

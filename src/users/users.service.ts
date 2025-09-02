@@ -3,12 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import {User} from './user.entity';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
     constructor(
         @InjectRepository(User)
         private userRepository: Repository<User>,
+        
     ) {}
 
     async createUser(username: string, email: string,  password: string): Promise<User> {
@@ -24,4 +26,8 @@ export class UsersService {
     async findById(id: number): Promise<User | null> {
         return this.userRepository.findOne({ where: { id } });
     }
+
+    //Generate the JWT
+
+    
 }
